@@ -8,7 +8,8 @@ This assignment makes use of data from a personal activity monitoring device. Th
 
 ### Loading and preprocessing the data
 First we will start with reading the data and doing some processing to properly create date and time columns.
-```{r}
+
+```r
 library(data.table)
 
 data<-read.csv("activity.csv")
@@ -19,7 +20,8 @@ data$date<-as.Date(as.character(data$date))
 
 ### What is mean total number of steps taken per day?
 Next we will calculate the total number of steps taken per day as shown in the below histogram.
-```{r}
+
+```r
 StDay<-with(data,tapply(steps,date,sum,na.rm=TRUE))
 StDayMean<-round(mean(StDay))
 StDayMedian<-median(StDay)
@@ -32,13 +34,16 @@ abline(h=StDayMean,lwd=2,col="blue")
 legend("top",lwd=rep(2,2),lty=c(2,1),legend=c("median","mean"),col=c("red","blue"))
 ```
 
-As can be seen the number of steps taken per day has a mean of `r StDayMean` steps and median of `r StDayMedian` steps
+![](PA1_template_files/figure-html/unnamed-chunk-2-1.png)<!-- -->
+
+As can be seen the number of steps taken per day has a mean of 9354 steps and median of 10395 steps
 
 
 
 ### What is the average daily activity pattern?
 Next we will calculate the total number of steps taken per day as shown in the below histogram.
-```{r}
+
+```r
 StInt<-tapply(data$steps,data$interval,mean,na.rm=TRUE)
 MaxInt<-names(which.max(StInt))
 MaxIntHr<-floor(as.numeric(MaxInt)/100)
@@ -49,17 +54,21 @@ plot(intervals,StInt,type="l",xaxt="n",xlab="Time",ylab="Number of Steps",main="
 axis(1,at=c(0,14400,28800,43200,57600,72000),label=c("00:00","04:00","08:00","12:00","16:00","20:00"))
 ```
 
-As shown in the graph the interval `r MaxInt` witnesses the maximum number of steps.
+![](PA1_template_files/figure-html/unnamed-chunk-3-1.png)<!-- -->
+
+As shown in the graph the interval 08:35:00 witnesses the maximum number of steps.
 
 
 
 ### Imputing missing values
 In this part we will attempt to impure the missing values from the data which represents a relatively big portion.
-```{r}
+
+```r
 Missing<-sum(is.na(data$steps))
 ```
-There are `r Missing` values in our data set. They will be replaced with the mean of the same time interval from ther days.
-```{r}
+There are 2304 values in our data set. They will be replaced with the mean of the same time interval from ther days.
+
+```r
 MissingData<-data[is.na(data$steps),]
 for (i in 1:length(StInt)){
     MissingData[MissingData$interval==as.numeric(names(StInt)[i]),]$steps<-StInt[i]
@@ -70,7 +79,8 @@ FilledData[is.na(FilledData$steps),]<-MissingData
 
 To check the impact of this imputing we will reconstruct the histogram above after the filling.
 
-```{r}
+
+```r
 StDay2<-with(FilledData,tapply(steps,date,sum))
 StDayMean2<-round(mean(StDay2))
 StDayMedian2<-median(StDay2)
@@ -83,13 +93,16 @@ abline(h=StDayMean2,lwd=2,col="blue")
 legend("top",lwd=c(4,2),lty=c(2,1),legend=c("median","mean"),col=c("red","blue"))
 ```
 
-As can be seen the mean and median number of steps taken per day have increased to `r as.character(StDayMean2)` steps and `r as.character(StDayMedian2)` steps respectively because we added steps that were previously considered zeros.
+![](PA1_template_files/figure-html/unnamed-chunk-6-1.png)<!-- -->
+
+As can be seen the mean and median number of steps taken per day have increased to 10766 steps and 10766.1886792453 steps respectively because we added steps that were previously considered zeros.
 
 ### Are there differences in activity patterns between weekdays and weekends?
 Finally, we will compare activity during weekdays vs during weekend.
 For that we will need to create a factor vector to determine each date whether it is a weekday or weekend.
 
-```{r}
+
+```r
 days<-weekdays(data$date)
 data$dayID[days %in% c("Monday","Tuesday","Wednesday","Thursday","Firday")]<-"weekday"
 data$dayID[days %in% c("Saturday","Sunday")]<-"weekend"
@@ -101,5 +114,6 @@ legend("topright",lwd=c(2,2),col=c("black","green"),legend=c("weekday","weekend"
 plot(intervals,StIntWE,type="l",xaxt="n",xlab="Time",ylab="Number of Steps",lwd=2,col="green")
 mtext("Average number of Steps",cex=1.3,outer=TRUE)
 axis(1,at=c(0,14400,28800,43200,57600,72000),label=c("00:00","04:00","08:00","12:00","16:00","20:00"))
-
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-7-1.png)<!-- -->
